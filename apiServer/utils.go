@@ -4,21 +4,29 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime"
 )
 
+// ApiError structure now includes a stack trace
 type ApiError struct {
-	Message string `json:"message"`
-	Code    int    `json:"-"`
+	Message    string `json:"message"`
+	Code       int    `json:"code"`
+	StackTrace string `json:"stack_trace,omitempty"`
 }
 
-// NewApiError creates a new ApiError instance
+// NewApiError function to capture stack trace
 func NewApiError(message string, code int) *ApiError {
-	return &ApiError{Message: message, Code: code}
+	stackBuf := make([]byte, 1024)
+	stackSize := runtime.Stack(stackBuf, false)
+	return &ApiError{
+		Message:    message,
+		Code:       code,
+		StackTrace: string(stackBuf[:stackSize]),
+	}
 }
 
-// Error implements the error interface by returning the error message
 func (e *ApiError) Error() string {
-	return fmt.Sprintf("Error %d: %s", e.Code, e.Message)
+	return fmt.Sprintf("Error: %s, Code: %d, StackTrace: %s", e.Message, e.Code, e.StackTrace)
 }
 
 func WriteJson(w http.ResponseWriter, data interface{}, status int) error {
