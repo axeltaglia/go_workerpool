@@ -114,6 +114,3 @@ Task task123. Progress: 100%
 - Add a web UI to visualize task progress.
 
 `;
-
-
-- master commit
